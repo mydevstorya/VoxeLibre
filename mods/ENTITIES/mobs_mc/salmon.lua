@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator(minetest.get_current_modname())
 
@@ -22,7 +20,7 @@ local salmon = {
 	},
 	xp_min = 1,
 	xp_max = 3,
-	armor = 100,
+	armor = {fleshy = 100, ocean = 100},
 	spawn_in_group = 5,
 	tilt_swim = true,
 	visual = "mesh",

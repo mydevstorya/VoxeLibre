@@ -1,5 +1,3 @@
---License for code WTFPL and otherwise stated in readmes
-
 local S = minetest.get_translator("mobs_mc")
 
 local rabbit = {
@@ -46,6 +44,7 @@ local rabbit = {
 	follow_velocity = 1.1,
 	floats = 1,
 	runaway = true,
+	runaway_from = {"mobs_mc:wolf"},
 	jump = true,
 	drops = {
 		{name = "mcl_mobitems:rabbit", chance = 1, min = 0, max = 1, looting = "common",},

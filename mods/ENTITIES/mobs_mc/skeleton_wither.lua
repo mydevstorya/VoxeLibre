@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -27,7 +25,7 @@ mcl_mobs.register_mob("mobs_mc:witherskeleton", {
 	visual = "mesh",
 	mesh = "mobs_mc_witherskeleton.b3d",
 	head_swivel = "head.control",
-	head_eye_height = 1.5,
+	head_eye_height = 2.05,
 	head_bone_position = vector.new( 0, 2.38, 0 ), -- for minetest <= 5.8
 	curiosity = 60,
 	textures = {
@@ -47,26 +45,35 @@ mcl_mobs.register_mob("mobs_mc:witherskeleton", {
 	},
 	walk_velocity = 1.2,
 	run_velocity = 2.0,
+	runaway = true,
+	runaway_from = {"mobs_mc:wolf"},
 	damage = 7,
 	reach = 2,
 	drops = {
-		{name = "mcl_core:coal_lump",
-		chance = 1,
-		min = 0,
-		max = 1,
-		looting = "common",},
-		{name = "mcl_mobitems:bone",
-		chance = 1,
-		min = 0,
-		max = 2,
-		looting = "common",},
-
-		-- Head
-		{name = "mcl_heads:wither_skeleton",
-		chance = 40, -- 2.5% chance
-		min = 1,
-		max = 1,
-		looting = "rare",},
+		{
+			name = "mcl_core:coal_lump",
+			chance = 1,
+			min = 0,
+			max = 1,
+			looting = "common",
+		},
+		{
+			name = "mcl_mobitems:bone",
+			chance = 1,
+			min = 0,
+			max = 2,
+			looting = "common",
+		},
+		{
+			name = "mcl_heads:wither_skeleton",
+			chance = 40, -- 2.5% chance
+			min = 1,
+			max = 1,
+			looting = "rare",
+			conditions = {
+				guarantee_if_killed_by = { "mobs_mc:stalker_overloaded" }
+			}
+		},
 	},
 	animation = {
 		stand_start = 0,

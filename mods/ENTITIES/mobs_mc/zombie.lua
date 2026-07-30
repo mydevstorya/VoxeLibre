@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -37,12 +35,13 @@ local drops_common = {
 
 local drops_zombie = table.copy(drops_common)
 table.insert(drops_zombie, {
-	-- Zombie Head
-	-- TODO: Only drop if killed by charged stalker
 	name = "mcl_heads:zombie",
 	chance = 200, -- 0.5%
 	min = 1,
 	max = 1,
+	conditions = {
+		guarantee_if_killed_by = { "mobs_mc:stalker_overloaded" }
+	}
 })
 
 local zombie = {
@@ -58,7 +57,7 @@ local zombie = {
 	xp_min = 5,
 	xp_max = 5,
 	head_swivel = "head.control",
-	head_eye_height = 1.4,
+	head_eye_height = 1.55,
 	head_bone_position = vector.new( 0, 6.3, 0 ), -- for minetest <= 5.8
 	curiosity = 7,
 	head_pitch_multiplier=-1,
@@ -243,6 +242,26 @@ mcl_mobs:spawn_setup({
 		"MesaPlateauF_sandlevel",
 		"MesaBryce_sandlevel",
 		"Mesa_sandlevel",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 0,
 	max_light = 7,
@@ -333,6 +352,26 @@ mcl_mobs:spawn_setup({
 		"MesaPlateauF_sandlevel",
 		"MesaBryce_sandlevel",
 		"Mesa_sandlevel",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 0,
 	max_light = 7,

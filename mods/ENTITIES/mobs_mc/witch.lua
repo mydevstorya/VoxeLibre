@@ -1,7 +1,5 @@
 --MCmobs v0.2
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -24,6 +22,7 @@ mcl_mobs.register_mob("mobs_mc:witch", {
 	},
 	xp_min = 5,
 	xp_max = 5,
+	head_eye_height = 1.5,
 	visual = "mesh",
 	mesh = "mobs_mc_witch.b3d",
 	textures = {

@@ -4,6 +4,9 @@ local math, vector, minetest, mcl_mobs = math, vector, minetest, mcl_mobs
 local mob_class = mcl_mobs.mob_class
 local validate_vector = mcl_util.validate_vector
 
+--- @type number Amount of time after a player attacks a mob for it to drop XP
+local PLAYER_KILL_TIME_US = 5e6
+
 local gamerule_maxEntityCramming = 24
 vl_tuning.setting("gamerule:maxEntityCramming", "number", {
 	description = S("The maximum number of pushable entities a mob or player can push, before taking 6♥♥♥ entity cramming damage per half-second."),
@@ -92,37 +95,78 @@ function mob_class:object_in_range(object)
 	return p1 and p2 and (vector.distance(p1, p2) <= dist)
 end
 
-function mob_class:item_drop(cooked, looting_level)
+---Calculates the final drop chance of an item drop.
+---Returns the final drop chance or an error.
+---@param dropdef 	    table
+---@param looting_level number
+---@param attacker_name string?
+---@return number, string?
+local function calculate_drop_chance(dropdef, looting_level, attacker_name)
+	local chance = dropdef.chance
+	if type(chance) ~= "number" then
+		return 0, string.format("unsupported chance value %q", chance)
+	end
+	if dropdef.conditions and dropdef.conditions.guarantee_if_killed_by and attacker_name then
+		for _, name in ipairs(dropdef.conditions.guarantee_if_killed_by) do
+			if name == attacker_name then
+				return 1, nil
+			end
+		end
+	end
+	if dropdef.chance ~= 0 then
+		chance = 1 / chance
+	end
+	if looting_level > 0 then
+		local chance_function = dropdef.looting_chance_function
+		if chance_function then
+			chance = chance_function(looting_level)
+		elseif dropdef.looting == "rare" then
+			chance = chance + (dropdef.looting_factor or 0.01) * looting_level
+		end
+	end
+	return chance, nil
+end
 
+---Calculate and drop items.
+---@param params {
+---    cooked       : boolean?,
+---    looting_level: number?,
+---    attacker_name: string?,
+---    player_kill: boolean?,
+---}
+function mob_class:item_drop(params)
 	if not mobs_drop_items then return end
-
-	looting_level = looting_level or 0
 
 	if (self.child and self.type ~= "monster") then
 		return
 	end
 
-	local obj, item, num
+	local looting_level = params.looting_level or 0
+	local cooked        = params.cooked or false
+	local attacker_name = params.attacker_name or nil
+	local player_kill   = params.player_kill or false
+
 	local pos = self.vl_drops_pos or self.object:get_pos()
+	local drops = self.drops or {}
 
-	self.drops = self.drops or {}
+	for n = 1, #drops do
+		local dropdef = drops[n]
 
-	for n = 1, #self.drops do
-		local dropdef = self.drops[n]
-		local chance = 1 / dropdef.chance
-		local looting_type = dropdef.looting
+		local chance, error = calculate_drop_chance(dropdef, looting_level, attacker_name)
+		if error then
+			core.log("warning", string.format(
+				"error calculating drop chance of drop #%d for entity %q, falling back to 1: %s",
+				n, self.name, error))
+			chance = 1
+		end
 
-		if looting_level > 0 then
-			local chance_function = dropdef.looting_chance_function
-			if chance_function then
-				chance = chance_function(looting_level)
-			elseif looting_type == "rare" then
-				chance = chance + (dropdef.looting_factor or 0.01) * looting_level
-			end
+		-- Only do special drops when killed by a player
+		if not player_kill and dropdef.looting ~= "common" then
+			chance = 0
 		end
 
 		local num = 0
-		local do_common_looting = (looting_level > 0 and looting_type == "common")
+		local do_common_looting = (looting_level > 0 and dropdef.looting == "common")
 		if random() < chance then
 			num = random(dropdef.min or 1, dropdef.max or 1)
 		elseif not dropdef.looting_ignore_chance then
@@ -134,7 +178,7 @@ function mob_class:item_drop(cooked, looting_level)
 		end
 
 		if num > 0 then
-			item = dropdef.name
+			local item = dropdef.name
 
 			if cooked then
 				local output = minetest.get_craft_result({method = "cooking", width = 1, items = {item}})
@@ -144,8 +188,7 @@ function mob_class:item_drop(cooked, looting_level)
 			end
 
 			for x = 1, num do
-				obj = minetest.add_item(pos, ItemStack(item .. " " .. 1))
-
+				local obj = minetest.add_item(pos, ItemStack(item .. " " .. 1))
 				if obj and obj:get_luaentity() then
 					obj:set_velocity(vector.new((random() - 0.5) * 1.5, 6, (random() - 0.5) * 1.5))
 				elseif obj then
@@ -162,7 +205,7 @@ function mob_class:item_drop(cooked, looting_level)
 	for _, item in pairs(self.armor_list) do
 		local stack = ItemStack(item)
 		if not stack:is_empty() then
-			obj = core.add_item(pos, stack)
+			local obj = core.add_item(pos, stack)
 			if obj and obj:get_luaentity() then
 				obj:set_velocity(vector.new((random() - 0.5) * 1.5, 6, (random() - 0.5) * 1.5))
 			elseif obj then
@@ -251,15 +294,19 @@ function mob_class:get_velocity()
 	return (v.x*v.x + v.z*v.z)^0.5
 end
 
-function mob_class:update_roll()
+function mob_class:update_roll(dtime)
 	local is_Fleckenstein = self.nametag == "Fleckenstein"
-	if not is_Fleckenstein and not self.is_Fleckenstein then return end
+	if not is_Fleckenstein and not self.is_Fleckenstein and not self.shaking then return end
 
 	local rot = self.object:get_rotation()
 	rot.z = is_Fleckenstein and PI or 0
+	if self.shaking then
+		self.shaking_timer = (self.shaking_timer or 0) + (random() * 2 - 1) * 5 * dtime
+		rot.z = rot.z + math.sin(self.shaking_timer) / 5
+	end
 	self.object:set_rotation(rot)
 
-	if is_Fleckenstein ~= self.is_Fleckenstein then
+	if is_Fleckenstein ~= not not self.is_Fleckenstein then
 		local pos = self.object:get_pos()
 		local cbox = is_Fleckenstein and table.copy(self.initial_properties.collisionbox) or self.object:get_properties().collisionbox
 		pos.y = pos.y + (cbox[2] + cbox[5])
@@ -314,16 +361,13 @@ function mob_class:check_smooth_rotation(dtime)
 		yaw = self.target_yaw
 	end
 
-	if self.shaking then
-		yaw = yaw + (random() * 2 - 1) / 72 * dtime
-	end
 	--[[ needed? if self.acc then
 		local change = yaw - initial_yaw
 		local si, co = sin(change), cos(change)
 		self.acc.x, self.acc.y = co * self.acc.x - si * self.acc.y, si * self.acc.x + co * self.acc.y
 	end ]]--
 	self.object:set_yaw(yaw)
-	self:update_roll()
+	self:update_roll(dtime)
 end
 
 -- are we flying in what we are suppose to? (taikedz)
@@ -333,9 +377,17 @@ function mob_class:flight_check()
 	return not not self.fly_in[nod] -- force boolean
 end
 
--- check if mob is dead or only hurt
-function mob_class:check_for_death(cause, cmi_cause)
-
+-- Check if mob is dead or only hurt
+---@param cause     string
+---@param cmi_cause {
+--- 	type   : string?,
+--- 	pos    : {x: number, y: number, z: number}?,
+--- 	node   : core.Node?,
+--- 	puncher: core.ObjectRef?,
+---}?
+---@param info {attacker_name: string?}?
+---@return boolean
+function mob_class:check_for_death(cause, cmi_cause, info)
 	if self.state == "die" then
 		return true
 	end
@@ -397,33 +449,36 @@ function mob_class:check_for_death(cause, cmi_cause)
 
 		if not gamerule_doMobLoot then return end
 
+		local player_kill = self.xp_timestamp and (core.get_us_time() - self.xp_timestamp) <= PLAYER_KILL_TIME_US
+
 		-- dropped cooked item if mob died in fire or lava
 		if cause == "lava" or cause == "fire" then
-			self:item_drop(true, 0)
+			self:item_drop({ cooked = true, player_kill = player_kill })
+			return
+		end
+
+		local wielditem
+		if cause == "hit" and cmi_cause and cmi_cause.puncher then
+			wielditem = cmi_cause.puncher:get_wielded_item()
 		else
-			local wielditem = ItemStack()
-			if cause == "hit" then
-				local puncher = cmi_cause.puncher
-				if puncher then
-					wielditem = puncher:get_wielded_item()
-				end
-			end
-			local cooked = mcl_burning.is_burning(self.object) or mcl_enchanting.has_enchantment(wielditem, "fire_aspect")
-			local looting = mcl_enchanting.get_enchantment(wielditem, "looting")
-			self:item_drop(cooked, looting)
+			wielditem = ItemStack()
+		end
 
-			if ((not self.child) or self.type ~= "animal") and (minetest.get_us_time() - self.xp_timestamp <= math.huge) then
-				local pos = self.vl_drops_pos or self.object:get_pos()
-				local xp_amount = random(self.xp_min, self.xp_max)
+		self:item_drop({
+			cooked        = mcl_burning.is_burning(self.object) or mcl_enchanting.has_enchantment(wielditem, "fire_aspect"),
+			looting       = mcl_enchanting.get_enchantment(wielditem, "looting"),
+			attacker_name = info and info.attacker_name,
+			player_kill   = player_kill,
+		})
 
-				if not mcl_sculk.handle_death(pos, xp_amount) then
-					--minetest.log("Xp not thrown")
-					if minetest.is_creative_enabled("") ~= true then
-						mcl_experience.throw_xp(pos, xp_amount)
-					end
-				else
-					--minetest.log("xp thrown")
-				end
+		-- Award XP
+		local player_hit = self.xp_timestamp and (core.get_us_time() - self.xp_timestamp <= PLAYER_KILL_TIME_US)
+		if player_hit and ((not self.child) or self.type ~= "animal") then
+			local pos = self.vl_drops_pos or self.object:get_pos()
+			local xp_amount = random(self.xp_min, self.xp_max)
+
+			if not mcl_sculk.handle_death(pos, xp_amount) and minetest.is_creative_enabled("") ~= true then
+				mcl_experience.throw_xp(pos, xp_amount)
 			end
 		end
 	end
@@ -457,7 +512,8 @@ function mob_class:check_for_death(cause, cmi_cause)
 
 	self.state = "die"
 	self.attack = nil
-	self.v_start = false
+	self.force_attack = false
+	self.fuse = false
 	self.fall_speed = DEFAULT_FALL_SPEED
 	self.timer = 0
 	self.blinktimer = 0
@@ -664,38 +720,17 @@ function mob_class:do_env_damage()
 			return true
 		end
 	else
-		local near = minetest.find_node_near(pos, 1, "mcl_core:cactus")
-		if near then
-			-- is mob touching the cactus?
-			local dist = vector.distance(pos, near)
-			local threshold  = 1.04 -- small mobs
-			-- medium mobs
-			if self.name == "mobs_mc:spider" or
-				self.name == "mobs_mc:iron_golem" or
-				self.name == "mobs_mc:horse" or
-				self.name == "mobs_mc:donkey" or
-				self.name == "mobs_mc:mule" or
-				self.name == "mobs_mc:polar_bear" or
-				self.name == "mobs_mc:cave_spider" or
-				self.name == "mobs_mc:skeleton_horse" or
-				self.name == "mobs_mc:zombie_horse" or
-				self.name == "mobs_mc:strider" or
-				self.name == "mobs_mc:hoglin" or
-				self.name == "mobs_mc:zoglin" then
-				threshold = 1.165
-			elseif self.name == "mobs_mc:slime_big" or
-				self.name == "mobs_mc:magma_cube_big" or
-				self.name == "mobs_mc:ghast" or
-				self.name == "mobs_mc:guardian_elder" or
-				self.name == "mobs_mc:wither" or
-				self.name == "mobs_mc:ender_dragon" then
-				threshold = 1.25
-			end
-			if dist < threshold then
-				self:damage_mob("cactus", 2)
-				if self:check_for_death("cactus", {type = "environment", pos = pos, node = self.standing_in}) then
-					return true
-				end
+		local cb = self.initial_properties.collisionbox
+
+		-- Touching cactus from the side
+		if core.find_nodes_in_area(
+			vector.offset(pos, cb[1], 0, cb[3]),
+			vector.offset(pos, cb[4], 0, cb[6]),
+			"mcl_core:cactus"
+		)[1] then
+			self:damage_mob("cactus", 2)
+			if self:check_for_death("cactus", {type = "environment", pos = pos, node = self.standing_in}) then
+				return true
 			end
 		end
 	end
@@ -794,7 +829,12 @@ function mob_class:step_damage (dtime, pos)
 	end
 end
 
-function mob_class:damage_mob(reason,damage)
+---
+---@param reason string
+---@param damage number
+---@param info   {attacker_name: string?}?
+---@return boolean
+function mob_class:damage_mob(reason, damage, info)
 	if not self.health then return end
 	damage = floor(damage)
 	if damage > 0 then
@@ -802,7 +842,7 @@ function mob_class:damage_mob(reason,damage)
 
 		mcl_mobs.effect(self.object:get_pos(), 5, "mcl_particles_smoke.png", 1, 2, 2, nil)
 
-		if self:check_for_death(reason, {type = reason}) then
+		if self:check_for_death(reason, { type = reason }, info) then
 			return true
 		end
 	end

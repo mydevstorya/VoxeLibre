@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -183,6 +181,10 @@ mcl_mobs:spawn_setup({
 		"JungleEdgeM",
 		"JungleM",
 		"JungleEdge",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
 	},
 	min_light = 0,
 	max_light = minetest.LIGHT_MAX+1,

@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 mobs_mc = {}
 
 local pr = PseudoRandom(os.time()*5)
@@ -62,6 +60,7 @@ mobs_mc.make_owner_teleport_function = function(dist, teleport_check_interval)
 							trybelownode and trybelownode.walkable then
 						-- Correct position found! Let's teleport.
 						self.object:set_pos(telepos)
+						self.old_y = telepos.y -- mcl_mobs uses this variable for fall damage. This disables it while teleporting
 						return
 					end
 				end

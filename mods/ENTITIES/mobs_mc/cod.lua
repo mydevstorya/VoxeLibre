@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local pi = math.pi
 local atann = math.atan
@@ -42,7 +40,7 @@ local cod = {
 	},
 	xp_min = 1,
 	xp_max = 3,
-	armor = 100,
+	armor = {fleshy = 100, ocean = 100},
 	rotate = 180,
 	spawn_in_group_min = 2, -- was 3
 	spawn_in_group = 4, -- was 8 nerfed until we can cap them properly locally. this is a group size, not a per spawn attempt

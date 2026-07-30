@@ -26,8 +26,10 @@ local function spawn_mobs(p1,p2,vi,zv)
 		elseif zv and vi then
 			return
 		end
-		vi = minetest.add_entity(vector.offset(mc[1],0,1,0),"mobs_mc:villager")
-		zv = minetest.add_entity(vector.offset(mc[2],0,1,0),"mobs_mc:villager_zombie")
+		vi = minetest.add_entity(vector.offset(vp,0,1,0),"mobs_mc:villager")
+		zv = minetest.add_entity(vector.offset(zp,0,1,0),"mobs_mc:villager_zombie")
+		local le = zv and zv:get_luaentity()
+		if le then le.persistent = true end
 		minetest.after(1,spawn_mobs,p1,p2,vi,zv)
 	end
 end
@@ -36,6 +38,7 @@ function mcl_structures.generate_igloo_basement(pos, orientation, loot, pr)
 	-- TODO: Add monster eggs
 	local path = modpath.."/schematics/mcl_structures_igloo_basement.mts"
 	mcl_structures.place_schematic(pos, path, orientation, nil, true, nil, function()
+		local pos = vector.offset(pos, 3, 0, 3)
 		local p1 = vector.offset(pos,-5,-5,-5)
 		local p2 = vector.offset(pos,5,5,5)
 		mcl_structures.fill_chests(p1,p2,loot,pr)

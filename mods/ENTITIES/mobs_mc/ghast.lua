@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -24,6 +22,7 @@ mcl_mobs.register_mob("mobs_mc:ghast", {
 	armor = { fleshy = 50, ghost = 100 },
 	xp_min = 5,
 	xp_max = 5,
+	head_eye_height = 2.0,
 	visual = "mesh",
 	mesh = "mobs_mc_ghast.b3d",
 	spawn_in_group = 1,
@@ -140,19 +139,19 @@ mcl_mobs.register_arrow("mobs_mc:fireball", {
 	hit_player = function(self, player)
 		local p = self.object:get_pos()
 		if p then
-			mcl_mobs.mob_class.boom(self,p, 1, true)
+			mcl_mobs.mob_class.boom(self, p, 1, { fire = true })
 		else
-			mcl_mobs.mob_class.boom(self,player:get_pos(), 1, true)
+			mcl_mobs.mob_class.boom(self, player:get_pos(), 1, { fire = true })
 		end
 	end,
 
 	hit_mob = function(self, mob)
 		local name = mob:get_luaentity().name
-		mcl_mobs.mob_class.boom(self,self.object:get_pos(), 1, true)
+		mcl_mobs.mob_class.boom(self,self.object:get_pos(), 1, { fire = true })
 	end,
 
 	hit_node = function(self, pos, node)
-		mcl_mobs.mob_class.boom(self,pos, 1, true)
+		mcl_mobs.mob_class.boom(self,pos, 1, { fire = true })
 	end
 })
 

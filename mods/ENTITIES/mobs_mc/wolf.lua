@@ -1,5 +1,3 @@
---License for code WTFPL and otherwise stated in readmes
-
 local S = minetest.get_translator("mobs_mc")
 
 local default_walk_chance = 50
@@ -99,7 +97,7 @@ local wolf = {
 	jump = true,
 	attacks_monsters = true,
 	attack_animals = true,
-	specific_attack = { "player", "mobs_mc:sheep" },
+	specific_attack = { "player", "mobs_mc:sheep", "mobs_mc:rabbit" },
 }
 
 mcl_mobs.register_mob("mobs_mc:wolf", wolf)

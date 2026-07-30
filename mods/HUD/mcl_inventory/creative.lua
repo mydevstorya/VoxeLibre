@@ -1,4 +1,4 @@
--- Original code (circa 2013) released under WTFPL License by BlockMen
+-- Original code (circa 2013) by BlockMen, refined by VoxeLibre contributors
 -- Code added for item priority system & major restructuring for performance optimizations by Thomas Conway (c.2025)
 local mod_name = minetest.get_current_modname()
 local S = minetest.get_translator(mod_name)
@@ -214,8 +214,10 @@ local mod_family_priorities = {
 			items = {
 				["mcl_potions:speckled_melon"] = 10,
 				["mcl_potions:fermented_spider_eye"] = 9,
-				["mcl_potions:water"] = 8,
-				["mcl_potions:river_water"] = 7,
+				["mcl_potions:river_water"] = 8,
+				["mcl_potions:water"] = 7.3,
+				["mcl_potions:water_splash"] = 7.2,
+				["mcl_potions:water_lingering"] = 7.1,
 				["mcl_potions:awkward"] = 6.3,
 				["mcl_potions:awkward_splash"] = 6.2,
 				["mcl_potions:awkward_lingering"] = 6.1,

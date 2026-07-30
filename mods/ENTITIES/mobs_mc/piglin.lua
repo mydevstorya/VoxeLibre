@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local trading_items = {
 	{ itemstring = "mcl_core:obsidian", amount_min = 1, amount_max = 1 },
@@ -57,6 +55,7 @@ local piglin = {
 	},
 	xp_min = 9,
 	xp_max = 9,
+	head_eye_height = 1.55,
 	armor = {fleshy = 90},
 	damage = 4,
 	reach = 3,
@@ -258,7 +257,7 @@ local zombified_piglin = {
 	reach = 2,
 	head_swivel = "head.control",
 	head_bone_position = vector.new( 0, 2.417, 0 ), -- for minetest <= 5.8
-	head_eye_height = 1.4,
+	head_eye_height = 1.55,
 	curiosity = 15,
 	visual = "mesh",
 	mesh = "mobs_mc_zombie_pigman.b3d",

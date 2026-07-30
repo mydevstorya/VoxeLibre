@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 local allow_nav_hacks = minetest.settings:get_bool("mcl_mob_allow_nav_hacks ",false)
@@ -27,7 +25,7 @@ mcl_mobs.register_mob("mobs_mc:iron_golem", {
 	visual = "mesh",
 	mesh = "mobs_mc_iron_golem.b3d",
 	head_swivel = "head.control",
-	head_eye_height = 2.5,
+	head_eye_height = 2.2,
 	head_bone_position = vector.new( 0, 3.38, 0 ), -- for minetest <= 5.8
 	curiosity = 10,
 	textures = {

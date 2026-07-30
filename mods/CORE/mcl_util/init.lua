@@ -222,21 +222,21 @@ local function drop_item_stack(pos, stack)
 end
 
 function mcl_util.drop_items_from_meta_container(listname)
-	return function(pos, oldnode, oldmetadata)
-		if oldmetadata and oldmetadata.inventory then
-			-- process in after_dig_node callback
-			local main = oldmetadata.inventory.main
-			if not main then return end
+	return function(pos, _, oldmeta)
+		if oldmeta and oldmeta.inventory then
+			local main = oldmeta.inventory[listname]
+			if not main then
+				return
+			end
 			for _, stack in pairs(main) do
 				drop_item_stack(pos, stack)
 			end
-		else
-			local meta = minetest.get_meta(pos)
-			local inv = meta:get_inventory()
-			for i = 1, inv:get_size("main") do
-				drop_item_stack(pos, inv:get_stack("main", i))
-			end
-			meta:from_table()
+			return
+		end
+		local meta = minetest.get_meta(pos)
+		local inv = meta:get_inventory()
+		for i = 1, inv:get_size("main") do
+			drop_item_stack(pos, inv:get_stack("main", i))
 		end
 	end
 end
@@ -339,29 +339,47 @@ function mcl_util.use_item_durability(itemstack, n)
 	tt.reload_itemstack_description(itemstack) -- update tooltip
 end
 
+local function find_attacker_name(mcl_reason)
+	if not mcl_reason then
+		return nil
+	end
+	local e = mcl_reason.direct and mcl_reason.direct:get_luaentity()
+	if e and e.name then
+		return e.name
+	end
+	e = mcl_reason.source and mcl_reason.source:get_luaentity()
+	if e and e.name then
+		return e.name
+	end
+	return nil
+end
+
+---
+--- @param target core.ObjectRef
+--- @param damage number
+--- @param mcl_reason {type: string, direct: any?, source: any?}?
 function mcl_util.deal_damage(target, damage, mcl_reason)
 	local luaentity = target:get_luaentity()
+	local hp        = target:get_hp()
 
 	if luaentity then
 		if luaentity.deal_damage then
 			luaentity:deal_damage(damage, mcl_reason or {type = "generic"})
 			return
 		elseif luaentity.is_mob then
-			-- local puncher = mcl_reason and mcl_reason.direct or target
-			-- target:punch(puncher, 1.0, {full_punch_interval = 1.0, damage_groups = {fleshy = damage}}, vector.direction(puncher:get_pos(), target:get_pos()), damage)
-			if luaentity.health > 0 then
-				luaentity.health = luaentity.health - damage
-			end
+			local reason        = (mcl_reason and mcl_reason.type) or "generic"
+			local attacker_name = find_attacker_name(mcl_reason)
+			luaentity:damage_mob(reason, damage, { attacker_name = attacker_name })
 			return
 		end
-	elseif not target:is_player() then return end
+	elseif not target:is_player() then
+		return
+	end
 
 	local is_immortal = target:get_armor_groups().immortal or 0
 	if is_immortal>0 then
 		return
 	end
-
-	local hp = target:get_hp()
 
 	if hp > 0 then
 		target:set_hp(hp - damage, {_mcl_reason = mcl_reason})
@@ -794,6 +812,9 @@ end
 function mcl_util.get_active_object_id_from_uuid(uuid)
 	return uuid_to_aoid_cache[uuid] or scan_active_objects() or uuid_to_aoid_cache[uuid]
 end
+
+--- @param uuid string
+--- @return core.LuaEntity?
 function mcl_util.get_luaentity_from_uuid(uuid)
 	return minetest.luaentities[ mcl_util.get_active_object_id_from_uuid(uuid) ]
 end

@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 local mod_bows = minetest.get_modpath("mcl_bows") ~= nil
@@ -28,7 +26,7 @@ local skeleton = {
 	pathfinding = 1,
 	group_attack = true,
 	head_swivel = "Head_Control",
-	head_eye_height = 1.5,
+	head_eye_height = 1.6,
 	head_bone_position = vector.new( 0, 2.38, 0 ), -- for minetest <= 5.8
 	curiosity = 6,
 	visual = "mesh",
@@ -57,6 +55,8 @@ local skeleton = {
 	},
 	walk_velocity = 1.2,
 	run_velocity = 2.0,
+	runaway = true,
+	runaway_from = {"mobs_mc:wolf"},
 	damage = 2,
 	reach = 2,
 	drops = {
@@ -75,13 +75,13 @@ local skeleton = {
 		min = 0,
 		max = 2,
 		looting = "common",},
-
-		-- Head
-		-- TODO: Only drop if killed by charged stalker
 		{name = "mcl_heads:skeleton",
 		chance = 200, -- 0.5% chance
 		min = 1,
-		max = 1,},
+		max = 1,
+		conditions = {
+			guarantee_if_killed_by = { "mobs_mc:stalker_overloaded" }
+		}},
 	},
 	animation = {
 		stand_speed = 15,
@@ -321,6 +321,26 @@ mcl_mobs:spawn_setup({
 		"JungleM_underground",
 		"ExtremeHillsM_underground",
 		"JungleEdgeM_underground",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 0,
 	max_light = 7,

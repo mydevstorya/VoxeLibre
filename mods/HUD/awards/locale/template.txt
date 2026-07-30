@@ -1,4 +1,4 @@
-# textdomain:awards
+# textdomain: awards
 ##[ api.lua ]##
 Amount of time award notification are displayed=
 Whether advancements should be announced in chat=

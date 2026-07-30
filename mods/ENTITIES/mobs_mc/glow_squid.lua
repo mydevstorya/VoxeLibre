@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -42,7 +40,7 @@ mcl_mobs.register_mob("mobs_mc:glow_squid", {
 	},
 	xp_min = 1,
 	xp_max = 3,
-	armor = 100,
+	armor = {fleshy = 100, ocean = 100},
 	rotate = 0,
 	-- tilt_swim breaks the animations.
 	--tilt_swim = true,
@@ -235,6 +233,26 @@ mcl_mobs:spawn_setup({
 		"JungleM_underground",
 		"ExtremeHillsM_underground",
 		"JungleEdgeM_underground",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 0,
 	max_light = minetest.LIGHT_MAX + 1,

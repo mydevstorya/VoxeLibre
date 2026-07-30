@@ -1,5 +1,3 @@
---License for code WTFPL and otherwise stated in readmes
-
 local S = minetest.get_translator("mobs_mc")
 
 local cow_def = {
@@ -204,7 +202,15 @@ mcl_mobs:spawn_setup({
 		"JungleEdge",
 		"JungleEdgeM",
 		"Swampland",
-		"Swampland_shore"
+		"Swampland_shore",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 9,
 	max_light = minetest.LIGHT_MAX+1,

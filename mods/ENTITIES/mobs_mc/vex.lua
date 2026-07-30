@@ -1,7 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
 
 local S = minetest.get_translator("mobs_mc")
 
@@ -24,6 +22,7 @@ mcl_mobs.register_mob("mobs_mc:vex", {
 	},
 	xp_min = 6,
 	xp_max = 6,
+	head_eye_height = 0.8,
 	visual = "mesh",
 	mesh = "mobs_mc_vex.b3d",
 	textures = {

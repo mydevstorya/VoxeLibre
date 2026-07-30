@@ -1,5 +1,3 @@
---License for code WTFPL and otherwise stated in readmes
-
 local S = minetest.get_translator("mobs_mc")
 
 local function spawn_check(pos, environmental_light, artificial_light, sky_light)
@@ -148,6 +146,22 @@ mcl_mobs:spawn_setup({
 		"MesaBryce",
 		"JungleEdge",
 		"SavannaM",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
 	},
 	min_light = 0,
 	max_light = maxlight,

@@ -148,10 +148,37 @@ function mob_class:mob_activate(staticdata, def, dtime)
 	end
 
 	-- Fix entity fields if missing
-	self.base_colbox = self.base_colbox or def.initial_properties.collisionbox
-	self.base_selbox = self.base_selbox or def.initial_properties.selectionbox or self.base_colbox
+	if not self.base_colbox or #self.base_colbox ~= 6 then
+		if def.initial_properties.collisionbox then
+			core.log("verbose", "Assigned collisionbox from initial properties to: " .. dump(self))
+			self.base_colbox = table.copy(def.initial_properties.collisionbox)
+		else
+			core.log("warning", "Mob without collisionbox: " .. dump(self))
+			self.base_colbox = {-.5, 0, -.5, .5, 2, .5} -- assumption: probably humanoid
+		end
+	end
+	if not self.base_selbox then
+		if def.initial_properties.selectionbox then
+			core.log("verbose", "Assigned selectionbox from initial properties to: " .. dump(self))
+			self.base_selbox = table.copy(def.initial_properties.selectionbox)
+		else
+			core.log("verbose", "Assigned selectionbox from colbox to: " .. dump(self))
+			self.base_selbox = self.base_colbox
+		end
+	end
 	self.base_mesh = self.base_mesh or def.initial_properties.mesh
-	self.base_size = self.base_size or def.initial_properties.visual_size or self.initial_properties.visual_size
+	if not self.base_size then
+		if self.initial_properties.visual_size then
+			core.log("verbose", "Assigned visual size from initial properties to: " .. dump(self))
+			self.base_size = table.copy(self.initial_properties.visual_size)
+		elseif def.initial_properties.visual_size then
+			core.log("verbose", "Assigned visual size from SELF initial properties to: " .. dump(self))
+			self.base_size = table.copy(def.initial_properties.visual_size)
+		else
+			core.log("verbose", "Assigned default visual size to: " .. dump(self))
+			self.base_size = vector.new(1,1,1)
+		end
+	end
 
 	local textures = self.base_texture
 	local mesh = self.base_mesh
@@ -162,7 +189,9 @@ function mob_class:mob_activate(staticdata, def, dtime)
 	if self.gotten and def.gotten_texture then textures = def.gotten_texture end
 	if self.gotten and def.gotten_mesh then mesh = def.gotten_mesh end
 	if self.child then
-		vis_size = { x = self.base_size.x * .5, y = self.base_size.y * .5 }
+		vis_size.x = vis_size.x * .5
+		vis_size.y = vis_size.y * .5
+		if vis_size.z then vis_size.z = vis_size.z * .5 end
 		if def.child_texture then textures = def.child_texture[1] end
 
 		colbox = {
@@ -192,6 +221,9 @@ function mob_class:mob_activate(staticdata, def, dtime)
 	self.path.stuck = false
 	self.path.following = false -- currently following path?
 	self.path.stuck_timer = 0 -- if stuck for too long search for path
+	self.path.los_switcher = false -- line of sight state for pathfinding edge detection
+	self.path.height_switcher = false -- height difference state for pathfinding edge detection
+	self.path.last_seen_target_pos = nil -- last position where mob saw its target (for pursuit)
 
 	-- Armor groups
 	-- immortal=1 because we use custom health
@@ -222,14 +254,15 @@ function mob_class:mob_activate(staticdata, def, dtime)
 	self.texture_mods = {}
 	self.object:set_texture_mod("")
 
-	self.v_start = false
+	self.force_attack = false
+	self.fuse = false
 	self.timer = 0
 	self.blinktimer = 0
 	self.blinkstatus = false
 
 	self.nametag = self.nametag or def.nametag
 
-	self.object:set_properties(self)
+	self.object:set_properties(self) -- FIXME consider explicitly setting properties, this may cause bugs
 	self:set_yaw(math.random() * math.pi * 2, 6)
 	self:update_tag()
 	self._current_animation = nil
@@ -250,10 +283,12 @@ function mob_class:mob_activate(staticdata, def, dtime)
 		self._run_armor_init = true
 	end
 
-	if not self._mcl_potions then self._mcl_potions = {} end
+	if not tmp or not tmp._mcl_potions then self._mcl_potions = {} end
 	mcl_potions._load_entity_effects(self)
 
 	if def.after_activate then def.after_activate(self, staticdata, def, dtime) end
+
+	self.xp_timestamp = 0
 end
 
 -- execute current state (stand, walk, run, attacks)
@@ -504,7 +539,7 @@ minetest.register_chatcommand("clearmobs", {
 					--minetest.log("No match - mob_type = ".. tostring(mob_name))
 				end
 
-				if mob_match then
+				if mob_match and not (default and o.persistent) then
 					local in_range = (not range or range <= 0) or vector.distance(p:get_pos(), o.object:get_pos()) <= range
 					if nametagged then
 						if o.nametag then o.object:remove() end

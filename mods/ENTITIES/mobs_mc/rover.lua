@@ -1,13 +1,5 @@
 --MCmobs v0.4
 --maikerumine
---made for MC like Survival game
---License for code WTFPL and otherwise stated in readmes
-
--- ENDERMAN BEHAVIOUR (OLD):
--- In this game, endermen attack the player on sight, like other monsters do.
--- However, they have a reduced viewing range to make them less dangerous.
--- This differs from MC, in which endermen only become hostile when provoked,
--- and they are provoked by looking directly at them.
 
 -- Rootyjr
 -----------------------------
@@ -15,7 +7,7 @@
 -- implemented teleport to avoid arrows.
 -- implemented teleport to avoid rain.
 -- implemented teleport to chase.
--- added enderman particles.
+-- added particles.
 -- drew mcl_portal_particle1.png
 -- drew mcl_portal_particle2.png
 -- drew mcl_portal_particle3.png
@@ -123,6 +115,7 @@ mcl_mobs.register_mob("mobs_mc:rover", {
 	},
 	xp_min = 5,
 	xp_max = 5,
+	head_eye_height = 2.55,
 	visual = "mesh",
 	mesh = "vl_rover.b3d",
 	textures = { "vl_mobs_rover.png^vl_mobs_rover_face.png" },
@@ -648,6 +641,26 @@ mcl_mobs:spawn_setup({
 		"JungleM_underground",
 		"ExtremeHillsM_underground",
 		"JungleEdgeM_underground",
+		"BambooJungle",
+		"BambooJungleM",
+		"BambooJungleEdge",
+		"BambooJungleEdgeM",
+		"BambooJungle_underground",
+		"BambooJungleM_underground",
+		"BambooJungleEdge_underground",
+		"BambooJungleEdgeM_underground",
+		"BambooJungle_ocean",
+		"BambooJungleM_ocean",
+		"BambooJungleEdge_ocean",
+		"BambooJungleEdgeM_ocean",
+		"BambooJungle_deep_ocean",
+		"BambooJungleM_deep_ocean",
+		"BambooJungleEdge_deep_ocean",
+		"BambooJungleEdgeM_deep_ocean",
+		"BambooJungle_shore",
+		"BambooJungleM_shore",
+		"BambooJungleEdge_shore",
+		"BambooJungleEdgeM_shore",
 	},
 	min_light = 0,
 	max_light = 7,
